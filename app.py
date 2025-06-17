@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import smtplib
 import random
 from email.mime.text import MIMEText
-from pyngrok import ngrok, conf
+# from pyngrok import ngrok, conf
 import socket
 from your_email_sms_sender import generate_otp, send_email_otp, send_sms_otp, update_email_verification, send_verification_email
 import razorpay
