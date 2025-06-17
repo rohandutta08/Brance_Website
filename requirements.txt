@@ -1,6 +1,6 @@
 werkzeug
 # smtplib
-random
+# random
 email
 pyngrok
 socket
