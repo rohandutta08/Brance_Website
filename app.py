@@ -298,7 +298,7 @@ def register():
                 "INSERT INTO watchlist (user) VALUES (?)",
                 (session['user'])
             )
-            conn.commit()
+            # conn.commit()
             conn.commit()
 
         return redirect(url_for('login'))
