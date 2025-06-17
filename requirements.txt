@@ -8,3 +8,4 @@ razorpay
 pyngrok
 sqlite3
 flask
+gunicorn
