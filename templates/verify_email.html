@@ -1,0 +1,97 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Email</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-dark text-white">
+
+<div class="container mt-5">
+    <div class="card bg-secondary text-white mx-auto" style="max-width: 500px;">
+        <div class="card-body text-center">
+            <h3 class="card-title mb-3">Verify Your Email</h3>
+
+            {% if not otp_sent %}
+                <form method="POST" action="{{ url_for('verify_email') }}">
+                    <button type="submit" class="btn btn-warning">Send Verification Code</button>
+                </form>
+            {% else %}
+                <p class="mb-3">A verification code has been sent to your email. Enter it below:</p>
+                <form method="POST" action="{{ url_for('verify_email') }}">
+                    <div class="mb-3">
+                        <input type="text" class="form-control text-center" name="otp" placeholder="Enter OTP" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Verify Email</button>
+                </form>
+            {% endif %}
+
+            {% if message %}
+                <div class="alert alert-info mt-3">{{ message }}</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Email</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+</head>
+<body class="bg-dark text-white">
+    <div class="container mt-5">
+        <h2>Verify Your Email</h2>
+        <p>An OTP has been sent to <strong>{{ session['email'] }}</strong>. Please enter it below.</p>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="otp" class="form-label">OTP</label>
+                <input type="text" class="form-control" id="otp" name="otp" required>
+            </div>
+            <button type="submit" class="btn btn-warning">Verify Email</button>
+        </form>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 75 },
+                color: { value: "#ffffff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.25 },
+                size: { value: 2 },
+                move: { enable: true, speed: 0.6 }
+            }
+        });
+    </script>
+    <script>
+        // Hide loader after page load
+        window.addEventListener("load", function () {
+            const loader = document.getElementById("loader");
+            loader.style.opacity = 0;
+            loader.style.pointerEvents = "none";
+            setTimeout(() => loader.style.display = "none", 500);
+        });
+
+        // Show loader on link click (for full page navigation)
+        document.addEventListener("DOMContentLoaded", function () {
+            const links = document.querySelectorAll("a:not([target='_blank']):not([href^='#'])");
+
+            links.forEach(link => {
+                link.addEventListener("click", function (e) {
+                    // Allow normal navigation
+                    document.getElementById("loader").style.display = "flex";
+                    document.getElementById("loader").style.opacity = "1";
+                    document.getElementById("loader").style.pointerEvents = "all";
+                });
+            });
+        });
+    </script>
+</body>
+</html>

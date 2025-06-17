@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Trade Crypto</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+</head>
+
+<body class="bg-dark text-white">
+<!-- Loader -->
+    <div id="loader" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+    pointer-events: all;
+">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Loading..." id="loader-logo">
+    </div>
+
+
+    <div id="particles-js"></div>
+    <div class="container mt-4 content-container"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary px-4">
+        <a class="navbar-brand d-flex align-items-center" href="/dashboard">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" height="40" class="me-2">
+            <strong>Brnance</strong>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/trade">Trade</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/settings">Settings</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/watchlist">Watchlist</a></li>
+                <li class="nav-item"><a class="nav-link" href="/support">Support</a></li>
+                <li class="nav-item"><a class="nav-link" href="/privacy">Privacy</a></li>
+                <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Trade Crypto - Hello, {{ user }}</h2>
+            <p><strong>Wallet Balance:</strong> ₹{{ "%.2f"|format(balance) }}</p>
+            <!-- <a href="/dashboard" class="btn btn-outline-light">Back to Dashboard</a> -->
+        </div>
+
+        <h3 class="mt-4">Make a Trade</h3>
+        <form method="POST" action="/trade" class="row g-3">
+            <div class="col-md-2">
+                <select name="action" class="form-select">
+                    <option value="buy">Buy</option>
+                    <option value="sell">Sell</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="coin" class="form-select">
+                    {% for symbol, coin in prices.items() %}
+                    <option value="{{ symbol }}">{{ symbol }} - {{ coin.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="number" step="any" name="amount" class="form-control" placeholder="Quantity" required>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-warning" type="submit">Execute</button>
+            </div>
+        </form>
+
+        <h3 class="mt-5">Trade History</h3>
+        <table class="table table-dark table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Coin</th>
+                    <th>Quantity</th>
+                    <th>Price ($)</th>
+                    <th>Total ($)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trade in trades %}
+                <tr>
+                    <td>{{ trade[2] }}</td>
+                    <td>{{ trade[3] }}</td>
+                    <td>{{ trade[4] }}</td>
+                    <td>{{ trade[5] }}</td>
+                    <td>{{ trade[6] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 75 },
+                color: { value: "#ffffff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.25 },
+                size: { value: 2 },
+                move: { enable: true, speed: 0.6 }
+            }
+        });
+    </script>
+<script>
+    // Hide loader after page load
+    window.addEventListener("load", function () {
+        const loader = document.getElementById("loader");
+        loader.style.opacity = 0;
+        loader.style.pointerEvents = "none";
+        setTimeout(() => loader.style.display = "none", 500);
+    });
+
+    // Show loader on link click (for full page navigation)
+    document.addEventListener("DOMContentLoaded", function () {
+        const links = document.querySelectorAll("a:not([target='_blank']):not([href^='#'])");
+
+        links.forEach(link => {
+            link.addEventListener("click", function (e) {
+                // Allow normal navigation
+                document.getElementById("loader").style.display = "flex";
+                document.getElementById("loader").style.opacity = "1";
+                document.getElementById("loader").style.pointerEvents = "all";
+            });
+        });
+    });
+</script>
+
+
+</body>
+
+</html>

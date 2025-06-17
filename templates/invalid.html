@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invalid Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+</head>
+<body class="bg-dark text-white text-center">
+<!-- Loader -->
+<div id="loader" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+    pointer-events: all;
+">
+    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Loading..." id="loader-logo">
+</div>
+
+
+    <div id="particles-js"></div>
+<div class="container mt-4 content-container"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary px-4">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" height="40" class="me-2">
+            <strong>Brnance</strong>
+        </a>
+        <!-- <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button> -->
+        <!-- <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div> -->
+    </nav>
+
+    <div class="container mt-5">
+        <h2 class="text-danger">Invalid Credentials</h2>
+        <p>Please check your username and password, and try again.</p>
+        <a href="/login" class="btn btn-outline-light mt-3">Go Back to Login</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 50 },
+                color: { value: "#ffffff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.3 },
+                size: { value: 2 },
+                move: { enable: true, speed: 0.6 }
+            }
+        });
+    </script>
+<script>
+    // Hide loader after page load
+    window.addEventListener("load", function () {
+        const loader = document.getElementById("loader");
+        loader.style.opacity = 0;
+        loader.style.pointerEvents = "none";
+        setTimeout(() => loader.style.display = "none", 500);
+    });
+
+    // Show loader on link click (for full page navigation)
+    document.addEventListener("DOMContentLoaded", function () {
+        const links = document.querySelectorAll("a:not([target='_blank']):not([href^='#'])");
+
+        links.forEach(link => {
+            link.addEventListener("click", function (e) {
+                // Allow normal navigation
+                document.getElementById("loader").style.display = "flex";
+                document.getElementById("loader").style.opacity = "1";
+                document.getElementById("loader").style.pointerEvents = "all";
+            });
+        });
+    });
+</script>
+
+
+</body>
+</html>

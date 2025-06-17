@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Settings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+</head>
+
+<body class="bg-dark text-white">
+    <!-- Loader -->
+    <div id="loader" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+    pointer-events: all;
+">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Loading..." id="loader-logo">
+    </div>
+
+
+    <div id="particles-js"></div>
+    <div class="container mt-4 content-container"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary px-4">
+        <a class="navbar-brand d-flex align-items-center" href="/dashboard">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" height="40" class="me-2">
+            <strong>Brnance</strong>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/trade">Trade</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/settings">Settings</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/watchlist">Watchlist</a></li>
+                <li class="nav-item"><a class="nav-link" href="/support">Support</a></li>
+                <li class="nav-item"><a class="nav-link" href="/privacy">Privacy</a></li>
+                <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <h2 class="mb-4">Settings</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="bg-secondary p-4 rounded">
+            <!-- Notifications -->
+            <div class="form-check form-switch mb-4">
+                <input class="form-check-input" type="checkbox" name="notifications" id="notifications"
+                    {% if settings.notifications %}checked{% endif %}>
+                <label class="form-check-label" for="notifications">Enable Notifications</label>
+            </div>
+
+            <!-- Currency -->
+            <div class="mb-4">
+                <label class="form-label">Preferred Currency</label>
+                <select class="form-select" name="currency">
+                    <option value="USD" {% if settings.currency == 'USD' %}selected{% endif %}>USD</option>
+                    <option value="INR" {% if settings.currency == 'INR' %}selected{% endif %}>INR</option>
+                    <option value="EUR" {% if settings.currency == 'EUR' %}selected{% endif %}>EUR</option>
+                    <option value="JPY" {% if settings.currency == 'JPY' %}selected{% endif %}>JPY</option>
+                </select>
+            </div>
+
+            <!-- Language -->
+            <div class="mb-4">
+                <label class="form-label">Language</label>
+                <select class="form-select" name="language">
+                    <option value="English" {% if settings.language == 'English' %}selected{% endif %}>English</option>
+                    <option value="Hindi" {% if settings.language == 'Hindi' %}selected{% endif %}>Hindi</option>
+                    <option value="Spanish" {% if settings.language == 'Spanish' %}selected{% endif %}>Spanish</option>
+                    <option value="French" {% if settings.language == 'French' %}selected{% endif %}>French</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-warning w-100">Save Settings</button>
+        </form>
+
+        <!-- Other Sections -->
+        <div class="mt-5">
+            <h5 class="border-bottom pb-2">Help & Support</h5>
+            <p><a href="/support" class="text-warning text-decoration-none">Contact Support</a></p>
+
+            <h5 class="border-bottom pb-2">Privacy Center</h5>
+            <p><a href="/privacy" class="text-warning text-decoration-none">View Privacy Policy</a></p>
+
+            <h5 class="border-bottom pb-2">About Us</h5>
+            <p class="text-white-50">
+                Brnance is a modern crypto trading platform built for security and speed.
+                <br>
+                <a href="/about" class="text-warning text-decoration-none">Learn more</a>
+            </p>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 75 },
+                color: { value: "#ffffff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.25 },
+                size: { value: 2 },
+                move: { enable: true, speed: 0.6 }
+            }
+        });
+    </script>
+    <script>
+        // Hide loader after page load
+        window.addEventListener("load", function () {
+            const loader = document.getElementById("loader");
+            loader.style.opacity = 0;
+            loader.style.pointerEvents = "none";
+            setTimeout(() => loader.style.display = "none", 500);
+        });
+
+        // Show loader on link click (for full page navigation)
+        document.addEventListener("DOMContentLoaded", function () {
+            const links = document.querySelectorAll("a:not([target='_blank']):not([href^='#'])");
+
+            links.forEach(link => {
+                link.addEventListener("click", function (e) {
+                    // Allow normal navigation
+                    document.getElementById("loader").style.display = "flex";
+                    document.getElementById("loader").style.opacity = "1";
+                    document.getElementById("loader").style.pointerEvents = "all";
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

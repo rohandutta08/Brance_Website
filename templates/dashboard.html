@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+</head>
+
+<body class="bg-dark text-white">
+    <!-- Loader -->
+    <div id="loader" style="
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+    pointer-events: all;
+">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Loading..." id="loader-logo">
+    </div>
+
+
+    <div id="particles-js"></div>
+    <div class="container mt-4 content-container"></div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary px-4">
+        <a class="navbar-brand d-flex align-items-center" href="/dashboard">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" height="40" class="me-2">
+            <strong>Brnance</strong>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/trade">Trade</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/settings">Settings</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="/watchlist">Watchlist</a></li>
+                <li class="nav-item"><a class="nav-link" href="/support">Support</a></li>
+                <li class="nav-item"><a class="nav-link" href="/privacy">Privacy</a></li>
+                <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Hello, {{ user }}</h2>
+            <!-- <a href="/logout" class="btn btn-outline-danger">Logout</a> -->
+        </div>
+
+
+        <div class="container mt-5">
+            <div class="d-flex justify-content-center align-items-start mb-4 flex-wrap">
+
+                <!-- Step 1: Register -->
+                <div class="step-box text-center me-4">
+                    <div class="circle bg-success text-white">1</div>
+                    <small>Registered</small><br>
+                    <button class="btn btn-success btn-sm mt-2" disabled>Completed</button>
+                </div>
+
+                <div class="arrow me-4">&#8594;</div>
+
+                <!-- Step 2: Email Verification -->
+                <div class="step-box text-center me-4">
+                    <div class="circle {% if email_verified %}bg-success{% else %}bg-secondary{% endif %} text-white">2
+                    </div>
+                    <small>Email Verified</small><br>
+                    {% if email_verified %}
+                    <button class="btn btn-success btn-sm mt-2" disabled>Completed</button>
+                    {% else %}
+                    <button class="btn btn-warning btn-sm mt-2" data-bs-toggle="modal"
+                        data-bs-target="#emailPendingModal">
+                        Verify Now
+                    </button>
+                    {% endif %}
+
+                </div>
+
+                <div class="arrow me-4">&#8594;</div>
+
+                <!-- Step 3: Phone Verification -->
+                <div class="step-box text-center">
+                    <div
+                        class="circle {% if phone_verified %}bg-success{% elif email_verified %}bg-warning{% else %}bg-secondary{% endif %} text-white">
+                        3</div>
+                    <small>Phone Verified</small><br>
+                    {% if email_verified and not phone_verified %}
+                    <a href="{{ url_for('verify_phone') }}" class="btn btn-warning btn-sm mt-2">Verify Now</a>
+                    {% elif phone_verified %}
+                    <button class="btn btn-success btn-sm mt-2" disabled>Completed</button>
+                    {% else %}
+                    <button class="btn btn-secondary btn-sm mt-2" disabled>Pending Email</button>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        <h3 class="mt-4">Live Crypto Prices</h3>
+        <table class="table table-dark table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Name</th>
+                    <th>Price (USD)</th>
+                    <th>24h Change</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for symbol, coin in prices.items() %}
+                <tr>
+                    <td>
+                        <img src="{{ coin.image }}" width="20" height="20" class="me-1">
+                        {{ symbol }}<br>
+                        {% if coin.change >= 0 %}
+                        <small class="text-success">▲ {{ "%.2f"|format(coin.change) }}%</small>
+                        {% else %}
+                        <small class="text-danger">▼ {{ "%.2f"|format(coin.change) }}%</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ coin.name }}</td>
+                    <td>${{ "%.2f"|format(coin.price) }}</td>
+                    <td>
+                        {% if symbol in watchlist %}
+                        <a href="{{ url_for('remove_watchlist', symbol=symbol) }}" class="btn btn-sm btn-danger">
+                            ❌ Remove
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('add_watchlist', symbol=symbol) }}" class="btn btn-sm btn-outline-warning">
+                            ⭐ Add
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+    <!-- <h3 class="mt-4">Make a Trade</h3>
+        <form method="POST" action="/trade" class="row g-3">
+            <div class="col-md-2">
+                <select name="action" class="form-select">
+                    <option value="buy">Buy</option>
+                    <option value="sell">Sell</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="coin" class="form-select">
+                    <option value="BTC">BTC</option>
+                    <option value="ETH">ETH</option>
+                    <option value="DOGE">DOGE</option>
+                    <option value="BNB">BNB</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="number" step="any" name="amount" class="form-control" placeholder="Amount" required>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-warning" type="submit">Execute</button>
+            </div>
+        </form>
+
+        <h3 class="mt-5">Trade History</h3>
+        <table class="table table-dark table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Coin</th>
+                    <th>Amount</th>
+                    <th>Price ($)</th>
+                    <th>Total ($)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trade in trades %}
+                <tr>
+                    <td>{{ trade[2] }}</td>
+                    <td>{{ trade[3] }}</td>
+                    <td>{{ trade[4] }}</td>
+                    <td>{{ trade[5] }}</td>
+                    <td>{{ trade[6] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div> -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 75 },
+                color: { value: "#ffffff" },
+                shape: { type: "circle" },
+                opacity: { value: 0.25 },
+                size: { value: 2 },
+                move: { enable: true, speed: 0.6 }
+            }
+        });
+    </script>
+    <script>
+        // Hide loader after page load
+        window.addEventListener("load", function () {
+            const loader = document.getElementById("loader");
+            loader.style.opacity = 0;
+            loader.style.pointerEvents = "none";
+            setTimeout(() => loader.style.display = "none", 500);
+        });
+
+        // Show loader on link click (for full page navigation)
+        document.addEventListener("DOMContentLoaded", function () {
+            const links = document.querySelectorAll("a:not([target='_blank']):not([href^='#'])");
+
+            links.forEach(link => {
+                link.addEventListener("click", function (e) {
+                    // Allow normal navigation
+                    document.getElementById("loader").style.display = "flex";
+                    document.getElementById("loader").style.opacity = "1";
+                    document.getElementById("loader").style.pointerEvents = "all";
+                });
+            });
+        });
+    </script>
+
+    <!-- Modal: Pending Email -->
+    <div class="modal fade" id="emailPendingModal" tabindex="-1" aria-labelledby="emailPendingModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border-secondary">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="emailPendingModalLabel">Email Verification Required</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    You need to verify your email before proceeding to phone verification.<br><br>
+                    <a href="{{ url_for('verify_email') }}" class="btn btn-warning">Verify Email Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Phone Verification Modal -->
+    <div class="modal fade" id="phoneModal" tabindex="-1" aria-labelledby="phoneModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ url_for('verify_phone') }}" class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="phoneModalLabel">Verify Phone</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>An OTP has been sent to your phone. Enter it below to verify:</p>
+                    <input type="text" name="otp" class="form-control" placeholder="Enter Phone OTP" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Verify Phone</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+</body>
+
+</html>
