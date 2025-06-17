@@ -1,11 +1,15 @@
-werkzeug
-# smtplib
-# random
-email
-pyngrok
-socket
-razorpay
-pyngrok
-sqlite3
+# werkzeug
+# # smtplib
+# # random
+# email
+# pyngrok
+# socket
+# razorpay
+# pyngrok
+# sqlite3
+# flask
+# gunicorn
 flask
 gunicorn
+werkzeug
+razorpay
