@@ -1,0 +1,9 @@
+werkzeug
+smtplib
+random
+email
+pyngrok
+socket
+razorpay
+pyngrok
+sqlite3
