@@ -672,17 +672,17 @@ def settings():
 if __name__ == "__main__":
     init_db()
 
-    from pyngrok import ngrok, conf
+    # from pyngrok import ngrok, conf
 
-    # Set your ngrok auth token
-    conf.get_default().auth_token = "2h8hVm4h8eU4vrlVgyCXZyYjwXG_31bxvzDPmabEAeLGHi1WS"
+    # # Set your ngrok auth token
+    # conf.get_default().auth_token = "2h8hVm4h8eU4vrlVgyCXZyYjwXG_31bxvzDPmabEAeLGHi1WS"
 
-    # Open a ngrok tunnel on the default port 5000
-    public_url = ngrok.connect(5000, bind_tls=True)  # TLS for HTTPS
-    print(f"\n🔗 Ngrok Tunnel URL: {public_url}\n")
+    # # Open a ngrok tunnel on the default port 5000
+    # public_url = ngrok.connect(5000, bind_tls=True)  # TLS for HTTPS
+    # print(f"\n🔗 Ngrok Tunnel URL: {public_url}\n")
 
-    # Optional: make the public URL available in templates
-    app.config["BASE_URL"] = public_url
+    # # Optional: make the public URL available in templates
+    # app.config["BASE_URL"] = public_url
 
     # Important: Disable debug mode to avoid multiple reloads
     app.run(host="0.0.0.0", port=5000, debug=False)
