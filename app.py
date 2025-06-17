@@ -294,6 +294,11 @@ def register():
             cursor = conn.cursor()
             cursor.execute("INSERT INTO users (email, phone, username, password, email_verified, phone_verified) VALUES (?, ?, ?, ?, ?, ?)",
                            (email, phone, username, password, 0, 0))
+            cursor.execute(
+                "INSERT INTO watchlist (user) VALUES (?)",
+                (session['user'])
+            )
+            conn.commit()
             conn.commit()
 
         return redirect(url_for('login'))
