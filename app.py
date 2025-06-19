@@ -256,35 +256,6 @@ def init_db():
 
 def get_crypto_prices(limit=100):
     try:
-        # url = "https://api.coingecko.com/api/v3/coins/markets"
-        # params = {
-        #     "vs_currency": "usd",
-        #     "order": "market_cap_desc",
-        #     "per_page": limit,
-        #     "page": 1,
-        #     "sparkline": "false"
-        # }
-        # response = requests.get(url, params=params)
-
-        # # Check for HTTP errors
-        # if response.status_code != 200:
-        #     print(f"API Error: {response.status_code}")
-        #     return {}
-
-        # data = response.json()
-
-        # prices = {}
-        # for coin in data:
-        #     symbol = coin['symbol'].upper()
-        #     prices[symbol] = {
-        #         "name": coin['name'],
-        #         "price": coin['current_price'],
-        #         "change": coin['price_change_percentage_24h'],
-        #         "image": coin['image']
-        #     }
-
-        # return prices
-        # url = f"https://api.coincap.io/v2/assets?limit={limit}"
         url = "https://rest.coincap.io/v3/assets?apiKey=46da9db6caa54c5f7e104d1a2b653f0141bcc76e759cafc29ab841f5246f38b4"
         params = {
             "limit": limit
@@ -335,34 +306,6 @@ def register():
                 cursor = conn.cursor()
                 cursor.execute("INSERT INTO users (email, phone, username, password, email_verified, phone_verified, balance) VALUES (?, ?, ?, ?, ?, ?, ?)",
                             (email, phone, username, password, 0, 0,0))
-                prices = get_crypto_prices()
-
-                # Default coins to add to watchlist
-                default_symbols = ['BTC', 'ETH', 'BNB']
-                now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-
-                for symbol in default_symbols:
-                    if symbol in prices:
-                        price = prices[symbol]['price']
-                        cursor.execute("""
-                            INSERT INTO watchlist (username, symbol, price, added_at)
-                            VALUES (?, ?, ?, ?)
-                        """, (username, symbol, price, now))
-                # cursor.execute("""
-                #             INSERT INTO trades (username)
-                #             VALUES (?)
-                #         """, (username,))
-                # Insert dummy trades
-                for symbol in default_symbols:
-                    if symbol in prices:
-                        price = prices[symbol]['price']
-                        amount = 0.01  # Default example
-                        total = round(price * amount, 2)
-                        action = 'buy'
-                        cursor.execute("""
-                            INSERT INTO trades (username, action, coin, amount, price, total)
-                            VALUES (?, ?, ?, ?, ?, ?)
-                        """, (username, action, symbol, amount, price, total))
 
             return redirect(url_for('login'))
 
@@ -436,6 +379,9 @@ def privacy():
 def about():
     return render_template('about.html')
 
+from datetime import datetime
+from flask import flash
+
 @app.route('/add_watchlist/<symbol>')
 def add_watchlist(symbol):
     if 'user' not in session:
@@ -445,19 +391,24 @@ def add_watchlist(symbol):
     prices = get_crypto_prices()
     coin = prices.get(symbol.upper())
 
-    if symbol not in prices:
-        flash("Invalid")
+    if not coin:
+        flash("Invalid symbol", "danger")
+        return redirect(url_for('dashboard'))
 
-    # current_price = prices[symbol]['price']
     with sqlite3.connect("database.db") as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM watchlist WHERE user = ? AND symbol = ?", (session['user'], symbol.upper()))
+        # Check if symbol already exists
+        cursor.execute("SELECT * FROM watchlist WHERE username = ? AND symbol = ?", (user, symbol.upper()))
         if not cursor.fetchone():
-            cursor.execute(
-                "INSERT INTO watchlist (user, symbol, price) VALUES (?, ?, ?)",
-                (session['user'], symbol.upper(), coin['price'])
-            )
+            now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            cursor.execute("""
+                INSERT INTO watchlist (username, symbol, price, added_at)
+                VALUES (?, ?, ?, ?)
+            """, (user, symbol.upper(), coin['price'], now))
             conn.commit()
+            flash(f"{symbol.upper()} added to your watchlist!", "success")
+        else:
+            flash(f"{symbol.upper()} is already in your watchlist.", "info")
 
     return redirect(url_for('dashboard'))
 
@@ -469,9 +420,10 @@ def remove_watchlist(symbol):
     user = session['user']
     with sqlite3.connect("database.db") as conn:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM watchlist WHERE user = ? AND symbol = ?", (user, symbol))
+        cursor.execute("DELETE FROM watchlist WHERE username = ? AND symbol = ?", (user, symbol.upper()))
         conn.commit()
 
+    flash(f"{symbol.upper()} removed from your watchlist.", "warning")
     return redirect(url_for('dashboard'))
 
 
@@ -490,21 +442,7 @@ def watchlist():
     db = get_db()
     cursor = db.cursor()
     rows = cursor.execute("SELECT symbol, price FROM watchlist WHERE username = ?", (user,))
-    # symbols = [row[0] for row in cursor.fetchall()]
-    # price = [row[1] for row in cursor.fetchall()]
     
-
-    # Dummy coin data for illustration
-    # all_coins = get_crypto_prices()
-    #{
-    #     'BTC': {'name': 'Bitcoin'},
-    #     'ETH': {'name': 'Ethereum'},
-    #     'DOGE': {'name': 'Dogecoin'},
-    #     'SOL': {'name': 'Solana'},
-    #     # Add more if needed
-    # }
-
-    # watchlist_coins = {sym: all_coins.get(sym, {}) for sym in symbols}
     coins = {}
     for symbol, price in rows:
         current = prices.get(symbol.upper())
@@ -603,20 +541,13 @@ def trade():
             prices = get_crypto_prices()
             price = prices.get(coin, {}).get('price', 0)
             total = round(price * amount, 2)
-
-            # with sqlite3.connect("database.db") as conn:
-            #     conn.execute(
-            #         "INSERT INTO trades (username, action, coin, amount, price, total) VALUES (?, ?, ?, ?, ?, ?)",
-            #         (session['user'], action, coin, amount, price, total)
-            #     )
-            
             
             if action == 'buy':
                 if balance < total:
                     conn.close()
                     flash("Insufficient Fund", "danger")
                     return redirect('/trade')
-                    # return "Insufficient balance", 400
+
                 # Deduct balance
                 balance -= total
                 cursor.execute("UPDATE users SET balance = balance - ? WHERE username = ?", (total, session['user']))
