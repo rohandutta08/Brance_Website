@@ -265,6 +265,12 @@ def get_crypto_prices(limit=100):
             "sparkline": "false"
         }
         response = requests.get(url, params=params)
+
+        # Check for HTTP errors
+        if response.status_code != 200:
+            print(f"API Error: {response.status_code}")
+            return {}
+
         data = response.json()
 
         prices = {}
@@ -278,8 +284,11 @@ def get_crypto_prices(limit=100):
             }
 
         return prices
+
     except Exception as e:
-        print(str(e))
+        print(f"Exception in get_crypto_prices: {e}")
+        return {}  # ✅ Always return a dict to avoid crashing your template
+
         
 
 @app.route('/')
