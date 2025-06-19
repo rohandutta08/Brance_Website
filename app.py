@@ -518,9 +518,6 @@ def dashboard():
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    # prices = get_crypto_prices()  # Fetch real-time prices
-    # return render_template('dashboard.html', user=session['user'], prices=prices)
-
     user = session['user']
     with sqlite3.connect("database.db") as conn:
         cursor = conn.cursor()
@@ -539,12 +536,7 @@ def dashboard():
 
     # Example crypto prices
     prices = get_crypto_prices()  # Assuming this returns a dictionary
-    # Fetch user's trade history
-    # with sqlite3.connect("database.db") as conn:
-    #     trades = conn.execute("SELECT * FROM trades WHERE username = ?", (session['user'],)).fetchall()
-
-    # return render_template('dashboard.html', user=session['user'], prices=prices, trades=trades)
-
+    
     return render_template("dashboard.html",
                            user=username,
                            prices=prices,
