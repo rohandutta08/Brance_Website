@@ -514,13 +514,32 @@ def dashboard():
     # print(prices)
     if prices is None:
         prices = {}
+
+    # PAGINATION LOGIC
+    page = int(request.args.get("page", 1))
+    per_page = 10  # Number of items per page
+    sorted_symbols = sorted(prices.keys())  # Sort for consistency
+
+    total = len(sorted_symbols)
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_symbols = sorted_symbols[start:end]
+    paginated_prices = {symbol: prices[symbol] for symbol in paginated_symbols}
     
+    # return render_template("dashboard.html",
+    #                        user=username,
+    #                        prices=prices,
+    #                        email_verified=email_verified,
+    #                        phone_verified=phone_verified,
+    #                        watchlist=watchlist)
     return render_template("dashboard.html",
                            user=username,
-                           prices=prices,
+                           prices=paginated_prices,
                            email_verified=email_verified,
                            phone_verified=phone_verified,
-                           watchlist=watchlist)
+                           watchlist=watchlist,
+                           page=page,
+                           total_pages=(total + per_page - 1) // per_page)
 
 @app.route('/trade', methods=['GET', 'POST'])
 def trade():
