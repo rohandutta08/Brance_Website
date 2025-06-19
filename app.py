@@ -319,26 +319,36 @@ def update_profile():
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    # user_id = session['user_id']
     try:
         email = request.form['email']
         phone = request.form['phone']
-        username = request.form['username']
-        # password = request.form['password']
+        new_username = request.form['username']
+        current_username = session['user']
 
-        # Example using SQLAlchemy
-        # user = User.query.get(user_id)
         with sqlite3.connect("database.db") as conn:
-            # cursor = conn.cursor()
             cursor = conn.cursor()
-            cursor.execute("Update users set email=?, phone=?, username=?",
-                            (email, phone, username))
+
+            # Check if new username is taken by someone else
+            cursor.execute("SELECT username FROM users WHERE username = ? AND username != ?", (new_username, current_username))
+            if cursor.fetchone():
+                flash("Username already taken. Please choose another one.", "danger")
+                return redirect(url_for('profile'))
+
+            # Update user profile
+            cursor.execute("UPDATE users SET email = ?, phone = ?, username = ? WHERE username = ?",
+                           (email, phone, new_username, current_username))
             conn.commit()
+
+        # Update session if username was changed
+        session['user'] = new_username
 
         flash('Profile updated successfully!', 'success')
         return redirect(url_for('profile'))
+
     except Exception as e:
-        print(str(e))
+        print(f"Error updating profile: {e}")
+        flash("An error occurred while updating your profile. Please try again.", "danger")
+        return redirect(url_for('profile'))
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
