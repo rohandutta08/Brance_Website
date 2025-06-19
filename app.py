@@ -256,31 +256,58 @@ def init_db():
 
 def get_crypto_prices(limit=100):
     try:
-        url = "https://api.coingecko.com/api/v3/coins/markets"
+        # url = "https://api.coingecko.com/api/v3/coins/markets"
+        # params = {
+        #     "vs_currency": "usd",
+        #     "order": "market_cap_desc",
+        #     "per_page": limit,
+        #     "page": 1,
+        #     "sparkline": "false"
+        # }
+        # response = requests.get(url, params=params)
+
+        # # Check for HTTP errors
+        # if response.status_code != 200:
+        #     print(f"API Error: {response.status_code}")
+        #     return {}
+
+        # data = response.json()
+
+        # prices = {}
+        # for coin in data:
+        #     symbol = coin['symbol'].upper()
+        #     prices[symbol] = {
+        #         "name": coin['name'],
+        #         "price": coin['current_price'],
+        #         "change": coin['price_change_percentage_24h'],
+        #         "image": coin['image']
+        #     }
+
+        # return prices
+        # url = f"https://api.coincap.io/v2/assets?limit={limit}"
+        url = "https://rest.coincap.io/v3/assets?apiKey=46da9db6caa54c5f7e104d1a2b653f0141bcc76e759cafc29ab841f5246f38b4"
         params = {
-            "vs_currency": "usd",
-            "order": "market_cap_desc",
-            "per_page": limit,
-            "page": 1,
-            "sparkline": "false"
+            "limit": limit
         }
+        # print(url)
         response = requests.get(url, params=params)
 
-        # Check for HTTP errors
         if response.status_code != 200:
-            print(f"API Error: {response.status_code}")
+            print(f"API error: {response.status_code}")
+            # print(response.json())
+            print(str(response))
             return {}
 
-        data = response.json()
+        data = response.json().get("data", [])
 
         prices = {}
         for coin in data:
             symbol = coin['symbol'].upper()
             prices[symbol] = {
                 "name": coin['name'],
-                "price": coin['current_price'],
-                "change": coin['price_change_percentage_24h'],
-                "image": coin['image']
+                "price": float(coin['priceUsd']),
+                "change": float(coin['changePercent24Hr']),
+                "image": f"https://assets.coincap.io/assets/icons/{symbol.lower()}@2x.png"
             }
 
         return prices
@@ -546,7 +573,7 @@ def dashboard():
     # Example crypto prices
     prices = get_crypto_prices()  # Assuming this returns a dictionary
 
-    print(prices)
+    # print(prices)
     if prices is None:
         prices = {}
     
