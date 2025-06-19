@@ -234,6 +234,7 @@ def init_db():
             password TEXT,
             email_verified INTEGER,
             phone_verified INTEGER,
+            balance INTEGER,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )''')
         conn.execute('''CREATE TABLE IF NOT EXISTS trades (
@@ -248,35 +249,38 @@ def init_db():
         conn.execute('''CREATE TABLE IF NOT EXISTS watchlist (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
-            symbol TEXT NOT NULL,
+            symbol TEXT,
             price REAL,
             added_at TEXT
         )''')
 
-def get_crypto_prices(limit=20):
-    url = "https://api.coingecko.com/api/v3/coins/markets"
-    params = {
-        "vs_currency": "usd",
-        "order": "market_cap_desc",
-        "per_page": limit,
-        "page": 1,
-        "sparkline": "false"
-    }
-    response = requests.get(url, params=params)
-    data = response.json()
-
-    prices = {}
-    for coin in data:
-        symbol = coin['symbol'].upper()
-        prices[symbol] = {
-            "name": coin['name'],
-            "price": coin['current_price'],
-            "change": coin['price_change_percentage_24h'],
-            "image": coin['image']
+def get_crypto_prices(limit=100):
+    try:
+        url = "https://api.coingecko.com/api/v3/coins/markets"
+        params = {
+            "vs_currency": "usd",
+            "order": "market_cap_desc",
+            "per_page": limit,
+            "page": 1,
+            "sparkline": "false"
         }
+        response = requests.get(url, params=params)
+        data = response.json()
 
-    return prices
+        prices = {}
+        for coin in data:
+            symbol = coin['symbol'].upper()
+            prices[symbol] = {
+                "name": coin['name'],
+                "price": coin['current_price'],
+                "change": coin['price_change_percentage_24h'],
+                "image": coin['image']
+            }
 
+        return prices
+    except Exception as e:
+        print(str(e))
+        
 
 @app.route('/')
 def home():
@@ -284,26 +288,52 @@ def home():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        email = request.form['email']
-        phone = request.form['phone']
-        username = request.form['username']
-        password = generate_password_hash(request.form['password'])
+    try:
+        if request.method == 'POST':
+            email = request.form['email']
+            phone = request.form['phone']
+            username = request.form['username']
+            password = generate_password_hash(request.form['password'])
 
-        with sqlite3.connect('database.db') as conn:
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO users (email, phone, username, password, email_verified, phone_verified) VALUES (?, ?, ?, ?, ?, ?)",
-                           (email, phone, username, password, 0, 0))
-            cursor.execute(
-                "INSERT INTO watchlist (user) VALUES (?)",
-                (session['user'])
-            )
-            # conn.commit()
-            conn.commit()
+            with sqlite3.connect('database.db') as conn:
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO users (email, phone, username, password, email_verified, phone_verified, balance) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                            (email, phone, username, password, 0, 0,0))
+                prices = get_crypto_prices()
 
-        return redirect(url_for('login'))
+                # Default coins to add to watchlist
+                default_symbols = ['BTC', 'ETH', 'BNB']
+                now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
-    return render_template('register.html')
+                for symbol in default_symbols:
+                    if symbol in prices:
+                        price = prices[symbol]['price']
+                        cursor.execute("""
+                            INSERT INTO watchlist (username, symbol, price, added_at)
+                            VALUES (?, ?, ?, ?)
+                        """, (username, symbol, price, now))
+                # cursor.execute("""
+                #             INSERT INTO trades (username)
+                #             VALUES (?)
+                #         """, (username,))
+                # Insert dummy trades
+                for symbol in default_symbols:
+                    if symbol in prices:
+                        price = prices[symbol]['price']
+                        amount = 0.01  # Default example
+                        total = round(price * amount, 2)
+                        action = 'buy'
+                        cursor.execute("""
+                            INSERT INTO trades (username, action, coin, amount, price, total)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                        """, (username, action, symbol, amount, price, total))
+
+            return redirect(url_for('login'))
+
+        return render_template('register.html')
+    except Exception as e:
+        print(str(e))
+        pass
 
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
@@ -423,7 +453,7 @@ def watchlist():
 
     db = get_db()
     cursor = db.cursor()
-    rows = cursor.execute("SELECT symbol, price FROM watchlist WHERE user = ?", (user,))
+    rows = cursor.execute("SELECT symbol, price FROM watchlist WHERE username = ?", (user,))
     # symbols = [row[0] for row in cursor.fetchall()]
     # price = [row[1] for row in cursor.fetchall()]
     
@@ -503,7 +533,7 @@ def dashboard():
         username, email_verified, phone_verified = user_data
 
         # Fetch user's watchlist symbols
-        cursor.execute("SELECT symbol FROM watchlist WHERE user = ?", (user,))
+        cursor.execute("SELECT symbol FROM watchlist WHERE username = ?", (user,))
         watchlist_rows = cursor.fetchall()
         watchlist = [row[0] for row in watchlist_rows]
 
@@ -684,17 +714,17 @@ def settings():
 if __name__ == "__main__":
     init_db()
 
-    from pyngrok import ngrok, conf
+    # from pyngrok import ngrok, conf
 
-    # Set your ngrok auth token
-    conf.get_default().auth_token = "2h8hVm4h8eU4vrlVgyCXZyYjwXG_31bxvzDPmabEAeLGHi1WS"
+    # # Set your ngrok auth token
+    # conf.get_default().auth_token = "2h8hVm4h8eU4vrlVgyCXZyYjwXG_31bxvzDPmabEAeLGHi1WS"
 
-    # Open a ngrok tunnel on the default port 5000
-    public_url = ngrok.connect(5000, bind_tls=True)  # TLS for HTTPS
-    print(f"\n🔗 Ngrok Tunnel URL: {public_url}\n")
+    # # Open a ngrok tunnel on the default port 5000
+    # public_url = ngrok.connect(5000, bind_tls=True)  # TLS for HTTPS
+    # print(f"\n🔗 Ngrok Tunnel URL: {public_url}\n")
 
-    # Optional: make the public URL available in templates
-    app.config["BASE_URL"] = public_url
+    # # Optional: make the public URL available in templates
+    # app.config["BASE_URL"] = public_url
 
     # Important: Disable debug mode to avoid multiple reloads
     app.run(host="0.0.0.0", port=5000, debug=False)
