@@ -71,8 +71,8 @@
                 <tr>
                     <th>Symbol</th>
                     <th>Name</th>
-                    <th>Price When Added (₹)</th>
-                    <th>Current Price (₹)</th>
+                    <th>Price When Added ($)</th>
+                    <th>Current Price ($)</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -81,8 +81,8 @@
                 <tr>
                     <td>{{ symbol }}</td>
                     <td>{{ coin.name }}</td>
-                    <td>₹ {{ "%.2f"|format(coin.price_at_addition) }}</td>
-                    <td>₹ {{ "%.2f"|format(coin.current_price) }}</td>
+                    <td>$ {{ "%.2f"|format(coin.price_at_addition) }}</td>
+                    <td>$ {{ "%.2f"|format(coin.current_price) }}</td>
                     <td>
                         <a href="{{ url_for('remove_watchlist', symbol=symbol) }}" class="btn btn-danger btn-sm">
                             Remove

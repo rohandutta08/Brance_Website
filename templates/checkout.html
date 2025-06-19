@@ -8,7 +8,7 @@
 <body class="bg-dark text-white">
     <div class="container mt-5">
         <h2 class="mb-4">Confirm Payment</h2>
-        <p>You are about to add <strong>₹{{ amount }}</strong> to your wallet.</p>
+        <p>You are about to add <strong>${{ amount }}</strong> to your wallet.</p>
         <form method="POST" action="/confirm-payment">
             <input type="hidden" name="amount" value="{{ amount }}">
             <button type="submit" class="btn btn-success">Confirm Payment</button>
