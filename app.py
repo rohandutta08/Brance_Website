@@ -536,6 +536,9 @@ def dashboard():
 
     # Example crypto prices
     prices = get_crypto_prices()  # Assuming this returns a dictionary
+
+    if prices is None:
+        prices = {}
     
     return render_template("dashboard.html",
                            user=username,
